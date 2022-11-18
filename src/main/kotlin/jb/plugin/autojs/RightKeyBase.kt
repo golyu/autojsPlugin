@@ -3,21 +3,15 @@ package jb.plugin.autojs
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
-import com.intellij.openapi.components.service
-import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.vfs.VfsUtilCore
 import icons.AutoJsIcons
-import jb.plugin.autojs.Utils.Companion.computeMd5
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
-import org.jetbrains.annotations.Nullable
-import java.awt.SystemColor.text
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import javax.swing.Icon
 
 class RightKeyBase(
     private val device: Device,
@@ -44,8 +38,8 @@ class RightKeyBase(
 
         val byteStream = ByteArrayOutputStream()//这个用来最后获取压缩后的字节流
         val outputStream = ZipOutputStream(byteStream)
-
         //遍历文件夹
+        virtualFile.refresh(false, true)//刷新一下缓存
         VfsUtilCore.iterateChildrenRecursively(virtualFile, null) { virtualFile ->
             if (virtualFile.isDirectory) {
                 return@iterateChildrenRecursively true
@@ -53,11 +47,9 @@ class RightKeyBase(
             val byteArr = virtualFile.contentsToByteArray()
             val zipName =
                 StringUtils.substringAfter(virtualFile.path, parentFile.path + "/")//压缩文件命名 (例dist\xx\yy\zz.txt)
-//            println("zipName $zipName")
             outputStream.putNextEntry(ZipEntry(zipName))//思就是我下面io操作(写入)都是在z这个文件条目下进行的。
             outputStream.write(byteArr)
             outputStream.closeEntry() //代表要结束当前条目的写入
-//            digest.update(byteArr) //更新摘要,计算md5,因为客户端那边是整体计算的,所以这里不用
             return@iterateChildrenRecursively true
         }
         outputStream.close()

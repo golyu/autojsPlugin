@@ -1,5 +1,6 @@
 package jb.plugin.autojs
 
+import java.io.File
 import java.io.IOException
 import java.net.*
 import java.security.MessageDigest
@@ -90,6 +91,18 @@ class Utils {
             val digest = MessageDigest.getInstance("MD5")//用来计算MD5
             digest.update(bs)
             return toHex(digest.digest())
+        }
+
+        fun createFile(filePath: String): File {
+            val file = File(filePath)
+            val parentFile = file.parentFile!!
+            if (!parentFile.exists()) {
+                parentFile.mkdirs()
+            }
+            if (!file.exists()) {
+                file.createNewFile()
+            }
+            return file
         }
     }
 }
